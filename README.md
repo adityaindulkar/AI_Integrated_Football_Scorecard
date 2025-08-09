@@ -17,7 +17,9 @@ Dynamic Updates: AJAX, Fetch API
 ### 1. Secure Authentication
 Role-based user authentication required to access all pages.
 Session-based login with 150-minute inactivity timeout.
-Credentials securely hashed and validated server-side.
+Credentials securely hashed and validated server-side.    
+**User-Specific Data**: All operations (team setups, matches, statistics) are scoped to the logged-in user via session-based authentication (@login_required decorator).    
+**Data Privacy**: Database queries include userid checks to ensure users can only access/modify their own teams, players, and match records.
 
 ### 2. Intuitive User Interface
 Drag-and-drop functionality for live match updates (player substitutions, event logging).
