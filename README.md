@@ -48,7 +48,7 @@ Success/error notifications for all user actions (e.g., "Match deleted successfu
 
 ## Images:
 ## Signup Page:
-<img width="1200" height="1200" alt="page1" src="https://github.com/user-attachments/assets/fb524a80-4894-422d-8b2b-f3b546978217" />
+<img width="1200" height="1200" alt="Image" src="https://github.com/user-attachments/assets/389df9b2-0876-4060-a43f-a886b5535868" />
 
 ## Login Page:
 <img width="1200" height="1200" alt="page2" src="https://github.com/user-attachments/assets/fec55f8d-ac25-4aec-8e36-2cb602f54788" />
