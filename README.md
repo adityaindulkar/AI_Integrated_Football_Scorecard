@@ -35,7 +35,7 @@ Summaries include match comments, goals scored, player names, venue, date, time 
 
 ### 5. Comprehensive Statistics & History
 Player performance tracking (goals, assists, disciplinary records).
-Match history with filtering by date, team, or competition.
+Match history with filtering by player and team.
 
 ### 6. Real-Time Match Event Handling
 Live logging of goals, substitutions, yellow/red cards with timestamps.
