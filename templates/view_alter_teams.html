@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>View and Alter Teams</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='view_alter_teams.css') }}">
+  <script>
+    function togglePlayers(id) {
+      const el = document.getElementById(id);
+      el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function confirmDelete(event) {
+      if (!confirm("Are you sure you want to delete this player?")) {
+        event.preventDefault();
+      }
+    }
+
+    function confirmAdd(event) {
+      if (!confirm("Add this player to the team?")) {
+        event.preventDefault();
+      }
+    }
+  </script>
+</head>
+<body>
+    <header><h1>View & Alter Teams</h1></header>
+  
+  <form method="POST" id="searchForm">
+  <input
+    type="text"
+    name="search"
+    placeholder="Search by Team ID or Name"
+    value="{{ search }}"
+    oninput="handleSearchInput(this.value)"
+  >
+  <button class="blue" type="submit">Search</button>
+</form>
+
+<script>
+  function handleSearchInput(value) {
+    if (value.trim() === "") {
+      // Auto-submit when input is cleared
+      document.getElementById("searchForm").submit();
+    }
+  }
+  function confirmDeleteTeam(event) {
+  if (!confirm("Are you sure you want to delete this entire team? This will remove all its players too.")) {
+    event.preventDefault();
+  }
+  function confirmRename(event) {
+  if (!confirm("Rename this team?")) {
+    event.preventDefault();
+  }
+}
+
+}
+
+</script>
+
+  <br>
+
+  {% for team in teams %}
+  <div class="team" onclick="togglePlayers('players-{{ team.teamid }}')">
+    <div style="display: inline-block; cursor: pointer; font-weight: bold;">
+      ID {{ team.teamid }}
+    </div>
+    <!-- Rename Form -->
+    <form method="POST" action="{{ url_for('change_team_name') }}" onsubmit="confirmRename(event)" style="display: inline;" onclick="event.stopPropagation();">
+      <input 
+        type="hidden" 
+        name="team_id" 
+        value="{{ team.teamid }}">
+
+      <input 
+        type="text" 
+        name="new_name" 
+        value="{{ team.teamname }}" 
+        style="font-weight:bold; font-size: 1rem; width: 250px;" 
+        required 
+        onclick="event.stopPropagation();"
+        onkeydown="event.stopPropagation();"
+      >
+
+      <button 
+        type="submit" 
+        class="blue" 
+        onclick="event.stopPropagation();">
+        Rename
+      </button>
+    </form>
+
+    <!-- Delete Team Button -->
+    <form method="POST" action="{{ url_for('delete_team') }}" onsubmit="confirmDeleteTeam(event)" style="display: inline; float: right;" onclick="event.stopPropagation();">
+      <input type="hidden" name="team_id" value="{{ team.teamid }}">
+      <button type="submit" class="red">Delete Team</button>
+    </form>
+  </div>
+
+  <div id="players-{{ team.teamid }}" class="players">
+    <h4>Players</h4>
+    {% for player in team.players %}
+      <div class="player-item">
+        {{ player[1] }}
+        <form method="POST" action="{{ url_for('delete_player') }}" onsubmit="confirmDelete(event)">
+          <input type="hidden" name="player_id" value="{{ player[0] }}">
+          <input type="hidden" name="team_id" value="{{ team.teamid }}">
+          <button class="red" type="submit">Delete</button>
+        </form>
+      </div>
+    {% endfor %}
+
+    <form method="POST" action="{{ url_for('add_player') }}" onsubmit="confirmAdd(event)">
+      <input type="hidden" name="team_id" value="{{ team.teamid }}">
+      <input type="text" name="player_name" placeholder="New player name" required>
+      <button class="blue" type="submit">Add Player</button>
+    </form>
+  </div>
+{% endfor %}
+
+
+
+
+</body>
+</html>

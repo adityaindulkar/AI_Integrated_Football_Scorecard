@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live Match Scorecard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='scorecard.css') }}">
+</head>
+<body>
+  <form method="POST" action="/complete-match">
+    <header>
+      <div class="clock-controls">
+        <strong>Clock:</strong> <span id="clock">00:00</span>
+        <button type="button" onclick="startClock()">Resume</button>
+        <button type="button" onclick="pauseClock()">Pause</button>
+        <button type="button" onclick="resetClock()">Reset</button>
+      </div>
+      <div>
+        <strong>Venue:</strong> {{ venue }} | <strong>Date:</strong> {{ match_date }}<br>
+        <strong>{{ home_team_name }}</strong> vs <strong>{{ away_team_name }}</strong>
+      </div>
+    </header>
+
+    
+
+    <input type="hidden" name="home_team_id" value="{{ home_team_id }}">
+    <input type="hidden" name="away_team_id" value="{{ away_team_id }}">
+    <input type="hidden" name="venue" value="{{ venue }}">
+    <input type="hidden" name="match_date" value="{{ match_date }}">
+    <input type="hidden" name="match_comments" id="matchCommentsInput">
+    <input type="hidden" name="home_score" id="home_score_input" value="0">
+    <input type="hidden" name="away_score" id="away_score_input" value="0">
+    <input type="hidden" name="event_data" id="eventDataInput">
+
+    <div class="score-window" id="score-window">
+      {{ home_team_name }} <span id="home-score">0</span> - <span id="away-score">0</span> {{ away_team_name }}
+    </div>
+
+    <div class="events-section">
+  <div class="team-events">
+    <h3>{{ home_team_name }}</h3>
+    <div class="event-row">
+      <div class="event-box" id="home-goal" ondrop="drop(event, 'goal', 'home')" ondragover="allowDrop(event)">Goals</div>
+      <div class="event-box" id="home-yellow" ondrop="drop(event, 'yellow', 'home')" ondragover="allowDrop(event)">Yellow Cards</div>
+    </div>
+    <div class="event-row">
+      <div class="event-box" id="home-red" ondrop="drop(event, 'red', 'home')" ondragover="allowDrop(event)">Red Cards</div>
+      <div class="event-box" id="home-own" ondrop="drop(event, 'own', 'home')" ondragover="allowDrop(event)">Own Goals</div>
+    </div>
+  </div>
+
+  <div class="team-events">
+    <h3>{{ away_team_name }}</h3>
+    <div class="event-row">
+      <div class="event-box" id="away-goal" ondrop="drop(event, 'goal', 'away')" ondragover="allowDrop(event)">Goals</div>
+      <div class="event-box" id="away-yellow" ondrop="drop(event, 'yellow', 'away')" ondragover="allowDrop(event)">Yellow Cards</div>
+    </div>
+    <div class="event-row">
+      <div class="event-box" id="away-red" ondrop="drop(event, 'red', 'away')" ondragover="allowDrop(event)">Red Cards</div>
+      <div class="event-box" id="away-own" ondrop="drop(event, 'own', 'away')" ondragover="allowDrop(event)">Own Goals</div>
+    </div>
+  </div>
+</div>
+
+<div id="subModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal(event)">&times;</span>
+    <h3>Select Substitute Player</h3>
+    <div id="benchPlayersList"></div>
+    <div class="sub-minute-input">
+      <label for="subMinute">Minute:</label>
+      <input type="number" id="subMinute" min="1" max="120" value="">
+    </div>
+    <button onclick="closeModal(event)">Cancel</button>
+  </div>
+</div>
+<div class="players-section">
+  <div class="team">
+    <h3>{{ home_team_name }} Players</h3>
+    {% for player in home_active_players %}
+      <div class="draggable" draggable="true" ondragstart="drag(event)" id="home-{{ player.player_id }}" data-team="home" data-id="{{ player.player_id }}" data-name="{{ player.player_name }}">
+        <button type="button" onclick="substitutePlayer('{{ player.player_id }}', '{{ home_team_id }}', 'home', event)">Substitute</button>
+        {{ player.player_name }}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="team">
+    <h3>{{ away_team_name }} Players</h3>
+    {% for player in away_active_players %}
+      <div class="draggable" draggable="true" ondragstart="drag(event)" id="away-{{ player.player_id }}" data-team="away" data-id="{{ player.player_id }}" data-name="{{ player.player_name }}">
+        <button type="button" onclick="substitutePlayer('{{ player.player_id }}', '{{ away_team_id }}', 'away', event)">Substitute</button>
+        {{ player.player_name }}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+
+    <div class="comments-section">
+      <h3>Match Comments</h3>
+      <textarea name="match_comments" placeholder="Enter your comments about the match here..."></textarea>
+    </div>
+
+    <div class="submit-section">
+      <button type="submit" onclick="prepareMatchData()">Match Complete</button>
+    </div>
+  </form>
+
+  <script>
+    // Match State Management
+const MatchState = {
+  clockRunning: false,
+  totalSeconds: 0,
+  interval: null,
+  homeScore: 0,
+  awayScore: 0,
+  currentStarterId: null,
+  currentTeamId: null,
+  currentTeamSide: null
+};
+
+// Clock Functions
+function updateClockDisplay() {
+  const mins = String(Math.floor(MatchState.totalSeconds / 60)).padStart(2, '0');
+  const secs = String(MatchState.totalSeconds % 60).padStart(2, '0');
+  document.getElementById('clock').textContent = `${mins}:${secs}`;
+}
+
+function startClock() {
+  if (!MatchState.clockRunning) {
+    MatchState.interval = setInterval(() => {
+      MatchState.totalSeconds++;
+      updateClockDisplay();
+    }, 1000);
+    MatchState.clockRunning = true;
+  }
+}
+
+function pauseClock() {
+  clearInterval(MatchState.interval);
+  MatchState.clockRunning = false;
+}
+
+function resetClock() {
+  MatchState.totalSeconds = 0;
+  updateClockDisplay();
+  clearInterval(MatchState.interval);
+  MatchState.clockRunning = false;
+}
+
+// Drag and Drop Functions
+function allowDrop(ev) {
+  ev.preventDefault();
+}
+
+function drag(ev) {
+  const id = ev.target.id;
+  ev.dataTransfer.setData("text", id);
+}
+
+function drop(ev, type, team) {
+    ev.preventDefault();
+    const data = ev.dataTransfer.getData("text");
+    const dragged = document.getElementById(data);
+
+    const player = dragged.dataset.name;
+    const playerId = dragged.dataset.id;
+    const draggedTeam = dragged.dataset.team;
+
+    if (draggedTeam !== team) {
+        alert("You can only drop players in their respective team's boxes.");
+        return;
+    }
+
+    const time = document.getElementById('clock').textContent;
+    const box = ev.target;
+
+    const entry = document.createElement('div');
+    entry.textContent = `${player} (${time})`;
+    entry.classList.add("event-entry");
+    entry.dataset.id = playerId;
+    entry.dataset.name = player;
+    entry.dataset.time = time;
+    entry.dataset.team = team;
+    entry.dataset.type = type;
+
+    const removeBtn = document.createElement('span');
+    removeBtn.textContent = " ✖";
+    removeBtn.classList.add("removable");
+    removeBtn.onclick = () => {
+        box.removeChild(entry);
+        if (type === 'goal') {
+            team === 'home' ? MatchState.homeScore-- : MatchState.awayScore--;
+        } else if (type === 'own') {
+            team === 'home' ? MatchState.awayScore-- : MatchState.homeScore--;
+        }
+        // Update the display directly
+        document.getElementById('home-score').textContent = MatchState.homeScore;
+        document.getElementById('away-score').textContent = MatchState.awayScore;
+    };
+
+    entry.appendChild(removeBtn);
+    box.appendChild(entry);
+
+    // Update score on add
+    if (type === 'goal') {
+        team === 'home' ? MatchState.homeScore++ : MatchState.awayScore++;
+    } else if (type === 'own') {
+        team === 'home' ? MatchState.awayScore++ : MatchState.homeScore++;
+    }
+    // Update the display directly
+    document.getElementById('home-score').textContent = MatchState.homeScore;
+    document.getElementById('away-score').textContent = MatchState.awayScore;
+}
+
+function removeEvent(entry, type, team) {
+  entry.parentNode.removeChild(entry);
+  updateScore(type, team, false);
+}
+
+function updateScore(type, team, isAdding) {
+  const modifier = isAdding ? 1 : -1;
+  
+  if (type === 'goal') {
+    team === 'home' ? MatchState.homeScore += modifier : MatchState.awayScore += modifier;
+  } else if (type === 'own') {
+    team === 'home' ? MatchState.awayScore += modifier : MatchState.homeScore += modifier;
+  }
+
+  document.getElementById('home-score').textContent = MatchState.homeScore;
+  document.getElementById('away-score').textContent = MatchState.awayScore;
+}
+
+// Substitution Functions
+function substitutePlayer(starterId, teamId, teamSide, event) {
+  if (event) event.preventDefault();
+  
+  MatchState.currentStarterId = starterId;
+  MatchState.currentTeamId = teamId;
+  MatchState.currentTeamSide = teamSide;
+  
+  // Set current minute
+  const currentMinute = Math.floor(MatchState.totalSeconds / 60) || 1;
+  document.getElementById("subMinute").value = currentMinute;
+  
+  // Populate bench players
+  const teamBench = teamSide === 'home' ? homeBenchPlayers : awayBenchPlayers;
+  const benchList = document.getElementById("benchPlayersList");
+  benchList.innerHTML = '';
+  
+  if (teamBench.length === 0) {
+    benchList.innerHTML = '<p>No substitutes available</p>';
+    return;
+  }
+  
+  teamBench.forEach(player => {
+    const btn = document.createElement('button');
+    btn.type = "button"; // ← This is crucial to prevent form submission
+    btn.textContent = player.player_name;
+    btn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      confirmSubstitution(player.player_id, player.player_name, e);
+    };
+    benchList.appendChild(btn);
+  });
+  
+  document.getElementById("subModal").style.display = "block";
+}
+
+function confirmSubstitution(subId, subName, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  
+  const minute = document.getElementById("subMinute").value || Math.floor(MatchState.totalSeconds / 60);
+  
+  fetch('/substitute', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      team_id: MatchState.currentTeamId,
+      starter_id: MatchState.currentStarterId,
+      sub_id: subId,
+      match_id: matchId,
+      minute: minute
+    })
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Network response was not ok');
+    return response.json();
+  })
+  .then(data => {
+    if (data.success) {
+      updateUIAfterSubstitution(data);
+      closeModal();
+    } else {
+      throw new Error(data.message || "Substitution failed");
+    }
+  })
+  .catch(error => {
+    console.error("Substitution error:", error);
+    alert(error.message || "An error occurred during substitution");
+  });
+}
+
+function handleResponse(response) {
+  if (!response.ok) throw new Error('Network response was not ok');
+  return response.json().then(data => {
+    if (data.success) {
+      updateUIAfterSubstitution(data);
+      closeModal();
+    } else {
+      throw new Error(data.message || "Substitution failed");
+    }
+  });
+}
+
+function updateUIAfterSubstitution(data) {
+  const minute = data.minute || document.getElementById("subMinute").value;
+  
+  // Update the subbed-out player
+  const oldPlayerDiv = document.getElementById(`${MatchState.currentTeamSide}-${data.starter_id}`);
+  if (oldPlayerDiv) {
+    oldPlayerDiv.innerHTML = `
+      <span class="subbed-out">${data.starter_name}</span>
+      <span class="sub-minute-badge">↓${minute}'</span>
+    `;
+    oldPlayerDiv.classList.add("inactive-player");
+  }
+
+  // Add the subbed-in player
+  const newPlayerDiv = document.createElement('div');
+  newPlayerDiv.className = 'draggable active-player';
+  newPlayerDiv.id = `${MatchState.currentTeamSide}-${data.sub_id}`;
+  newPlayerDiv.setAttribute('draggable', 'true');
+  newPlayerDiv.setAttribute('ondragstart', 'drag(event)');
+  newPlayerDiv.dataset.team = MatchState.currentTeamSide;
+  newPlayerDiv.dataset.id = data.sub_id;
+  newPlayerDiv.dataset.name = data.sub_name;
+  
+  newPlayerDiv.innerHTML = `
+    <span>${data.sub_name}</span>
+    <span class="sub-minute-badge">↑${minute}'</span>
+  `;
+
+  // Insert in the correct position
+  if (oldPlayerDiv) {
+    oldPlayerDiv.parentNode.insertBefore(newPlayerDiv, oldPlayerDiv.nextSibling);
+  } else {
+    const container = document.querySelector(`.team.${MatchState.currentTeamSide} .player-list`);
+    if (container) container.appendChild(newPlayerDiv);
+  }
+
+  // Remove from bench players array
+  const benchArray = MatchState.currentTeamSide === 'home' ? homeBenchPlayers : awayBenchPlayers;
+  const index = benchArray.findIndex(p => p.player_id == data.sub_id);
+  if (index !== -1) benchArray.splice(index, 1);
+}
+
+function createPlayerElement(data, minute) {
+  const div = document.createElement('div');
+  div.className = 'draggable active-player';
+  div.id = `${MatchState.currentTeamSide}-${data.sub_id}`;
+  div.setAttribute('draggable', 'true');
+  div.setAttribute('ondragstart', 'drag(event)');
+  div.dataset.team = MatchState.currentTeamSide;
+  div.dataset.id = data.sub_id;
+  div.dataset.name = data.sub_name;
+  
+  div.innerHTML = `
+    <span>${data.sub_name}</span>
+    <span class="sub-minute-badge">↑${minute}'</span>
+  `;
+  
+  return div;
+}
+
+function insertPlayerInUI(newPlayer, oldPlayer) {
+  if (oldPlayer) {
+    oldPlayer.parentNode.insertBefore(newPlayer, oldPlayer.nextSibling);
+  } else {
+    const container = document.querySelector(`.team.${MatchState.currentTeamSide} .player-list`);
+    if (container) container.appendChild(newPlayer);
+  }
+}
+
+function updateBenchPlayers(subId) {
+  const benchArray = MatchState.currentTeamSide === 'home' ? homeBenchPlayers : awayBenchPlayers;
+  const index = benchArray.findIndex(p => p.player_id == subId);
+  if (index !== -1) benchArray.splice(index, 1);
+}
+
+function handleError(error) {
+  console.error("Substitution error:", error);
+  alert(error.message || "An error occurred during substitution");
+}
+
+function closeModal(event) {
+  if (event) event.preventDefault();
+  document.getElementById("subModal").style.display = "none";
+  MatchState.currentStarterId = null;
+  MatchState.currentTeamId = null;
+  MatchState.currentTeamSide = null;
+}
+
+// Match Data Preparation
+function prepareMatchData() {
+  document.getElementById('home_score_input').value = MatchState.homeScore;
+  document.getElementById('away_score_input').value = MatchState.awayScore;
+  document.getElementById('matchCommentsInput').value = document.querySelector("textarea[name='match_comments']").value;
+
+  const events = Array.from(document.querySelectorAll(".event-entry")).map(entry => ({
+    player_id: entry.dataset.id,
+    player_name: entry.dataset.name,
+    event_time: entry.dataset.time,
+    event_type: entry.dataset.type,
+    team_side: entry.dataset.team,
+    team_id: getTeamIdForEvent(entry)
+  }));
+
+  document.getElementById('eventDataInput').value = JSON.stringify(events);
+}
+
+function getTeamIdForEvent(entry) {
+  const isOwnGoal = entry.dataset.type === 'own';
+  const isHome = entry.dataset.team === 'home';
+  return isOwnGoal ? 
+    (isHome ? "{{ away_team_id }}" : "{{ home_team_id }}") : 
+    (isHome ? "{{ home_team_id }}" : "{{ away_team_id }}");
+}
+
+// Initialize
+const matchId = {{ match_id | tojson | safe }};
+const homeBenchPlayers = {{ home_bench_players | tojson | safe }} || [];
+const awayBenchPlayers = {{ away_bench_players | tojson | safe }} || [];
+
+// Initialize score display
+document.getElementById('home-score').textContent = MatchState.homeScore;
+document.getElementById('away-score').textContent = MatchState.awayScore;
+
+
+
+</script>
+</body>
+</html>

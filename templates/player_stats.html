@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='player_stats.css') }}">
+    <title>Player Statistics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="stats-header">
+            <h2>Player Statistics</h2>
+            <p class="text-muted">View all player stats for your teams</p>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="search-box">
+            <form method="GET" action="{{ url_for('player_stats') }}" class="row g-3">
+                <div class="col-md-8">
+                    <input type="text" class="form-control" name="search" 
+                           placeholder="Search player name..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-primary" type="submit">Search</button>
+                    {% if search_query %}
+                    <a href="{{ url_for('player_stats') }}" class="btn btn-outline-secondary">Clear</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+        
+        <!-- Player Stats Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Player Name</th>
+                        <th>Team</th>
+                        <th>Appearances</th>
+                        <th>Goals</th>
+                        <th>Yellow Cards</th>
+                        <th>Red Cards</th>
+                        <th>Own Goals</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player in players_stats %}
+                    <tr>
+                        <td>{{ player[1] }}</td>
+                        <td>{{ player[2] or 'No Team' }}</td>
+                        <td>{{ player[3] or 0 }}</td>
+                        <td>{{ player[4] or 0 }}</td>
+                        <td>{{ player[5] or 0 }}</td>
+                        <td>{{ player[6] or 0 }}</td>
+                        <td>{{ player[7] or 0 }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="no-players">No players found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Navigation link back to home -->
+        <div class="mt-4">
+            <a href="{{ url_for('home') }}" class="btn btn-outline-primary">Back to Home</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+h2 {
+  background-color: #ff0000;
+  color: white;
+  padding: 1.5rem;
+  margin: 0;
+  text-align: center;
+  font-size: 1.5rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+form {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+
+.form-header {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.form-header input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  flex: 1;
+}
+
+.teams-container {
+  display: flex;
+  gap: 30px;
+}
+
+.team-column {
+  flex: 1;
+}
+
+.team-column h3 {
+  background: #f0f0f0;
+  padding: 12px;
+  margin: 0 0 15px 0;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.team-list {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.team-list label {
+  display: block;
+  padding: 10px;
+  margin-bottom: 8px;
+  background: #f9f9f9;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.team-list label:hover {
+  background: #f0f0f0;
+}
+
+.team-list input[type="radio"] {
+  margin-right: 10px;
+}
+
+button[type="submit"] {
+  background: #ff0000;
+  color: white;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: block;
+  margin: 30px auto;
+  transition: background 0.2s;
+}
+
+button[type="submit"]:hover {
+  background: #cc0000;
+}

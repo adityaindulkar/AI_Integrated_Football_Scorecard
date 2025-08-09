@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='select_lineups.css') }}">
+  <title>Select Starting XI</title>
+</head>
+<body>
+  <h2>Select Starting XI for Home and Away Teams</h2>
+  <form method="POST">
+    <input type="hidden" name="home_team" value="{{ home_team }}">
+    <input type="hidden" name="away_team" value="{{ away_team }}">
+    <input type="hidden" name="venue" value="{{ venue }}">
+    <input type="hidden" name="match_date" value="{{ match_date }}">
+
+    <div class="team-section">
+      <h3>{{ home_team_name }} - Home Team</h3>
+      <div class="player-list">
+        {% for player in home_players %}
+          <label><input type="checkbox" name="home_starting" value="{{ player[0] }}"> {{ player[1] }}</label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="team-section">
+      <h3>{{ away_team_name }} - Away Team</h3>
+      <div class="player-list">
+        {% for player in away_players %}
+          <label><input type="checkbox" name="away_starting" value="{{ player[0] }}"> {{ player[1] }}</label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <button type="submit">Proceed to Scorecard</button>
+  </form>
+</body>
+</html>

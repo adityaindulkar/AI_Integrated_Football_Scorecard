@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Select Teams</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='select_teams.css') }}">
+</head>
+<body>
+  <header><h2>Select Home and Away Teams</h2></header>
+  <form method="POST" onsubmit="return validateTeams()">
+    <div class="form-header">
+      <input type="text" name="venue" placeholder="Venue" required>
+      <input type="date" name="match_date" value="{{ today }}" required>
+    </div>
+
+    <div class="teams-container">
+      <div class="team-column">
+        <h3>Home Team</h3>
+        <div class="team-list">
+          {% for team in teams %}
+            <label>
+              <input type="radio" name="home_team" value="{{ team[0] }}" required>
+              {{ team[1] }} (ID: {{ team[0] }})
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="team-column">
+        <h3>Away Team</h3>
+        <div class="team-list">
+          {% for team in teams %}
+            <label>
+              <input type="radio" name="away_team" value="{{ team[0] }}" required>
+              {{ team[1] }} (ID: {{ team[0] }})
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <br><br>
+    <button type="submit">Continue to Scorecard</button>
+  </form>
+</body>
+
+<script>
+  function validateTeams() {
+    const home = document.querySelector('input[name="home_team"]:checked');
+    const away = document.querySelector('input[name="away_team"]:checked');
+
+    if (!home || !away) {
+      alert("Please select both Home and Away teams.");
+      return false;
+    }
+
+    if (home.value === away.value) {
+      alert("Home and Away teams cannot be the same!");
+      return false;
+    }
+
+    return true;
+  }
+</script>
+
+</html>

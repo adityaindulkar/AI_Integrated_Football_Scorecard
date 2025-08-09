@@ -1,0 +1,83 @@
+body {
+        font-family: Arial, sans-serif;
+        background-color: #ffffff;
+        color: #000;
+        margin: 0;
+        padding: 0;
+    }
+    header {
+        background-color: #ff0000;
+        color: white;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .container {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    /* Team/Player styling */
+    .team {
+        background: #f0f0f0;
+        padding: 1rem;
+        margin: 0.8rem auto 0.5rem;
+        cursor: pointer;
+        border-radius: 8px;
+        width: 95%;
+    }
+    .players {
+        display: none;
+        padding-left: 2rem;
+    }
+    .player-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fff;
+        padding: 0.3rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        margin-bottom: 0.3rem;
+    }
+    form { 
+        display: inline; 
+    }
+    input[type="text"] {
+        padding: 0.5rem;
+        margin-top: 1rem;
+        margin-left: 1rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    /* Button styles */
+    button {
+        padding: 0.4rem 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        border: none;
+    }
+    /* Centered navigation buttons */
+    .nav-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin: 4rem auto;
+        width: 100%;
+    }
+    .nav-buttons button {
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+        min-width: 200px;
+        text-align: center;
+    }
+    .red { 
+        background-color: red; 
+        color: white; 
+    }
+    .blue { 
+        background-color: blue; 
+        color: white; 
+    }

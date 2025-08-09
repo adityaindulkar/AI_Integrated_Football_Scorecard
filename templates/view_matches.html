@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Match History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='view_matches.css') }}">
+    <script>
+         async function deleteMatch(matchId) {
+            if (!confirm('Are you sure you want to delete this match? This cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/delete_match/${matchId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to delete match');
+                }
+
+                const matchCard = document.querySelector(`.match-card[data-match-id="${matchId}"]`);
+                if (matchCard) {
+                    matchCard.remove();
+                    showToast('Match deleted successfully');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message);
+            }
+        }
+
+        function toggleDetails(matchId) {
+            const detailsElement = document.getElementById(`details-${matchId}`);
+            if (detailsElement) {
+                detailsElement.style.display = detailsElement.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</head>
+<body>
+    <h1>Your Match History</h1>
+
+    {% for date, matches_on_date in grouped_matches.items() %}
+        <div class="date-section">
+            <div class="date-heading">{{ date }}</div>
+
+            {% for match in matches_on_date %}
+                <div class="match-card" data-match-id="{{ match.match_id }}">
+                    <button class="delete-btn" onclick="deleteMatch({{ match.match_id }})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                    
+                    <div onclick="toggleDetails({{ match.match_id }})">
+                        <h3>{{ match.home_team }} {{ match.home_score }} - {{ match.away_score }} {{ match.away_team }}</h3>
+                        <p><strong>Venue:</strong> {{ match.venue }}</p>
+                        <p><strong>Summary:</strong> {{ match.summary }}</p>
+                    </div>
+                    <div class="details" id="details-{{ match.match_id }}" style="display: none;">
+                        <div style="display: flex; gap: 2rem;">
+                            <!-- Home Team Section -->
+                            <div style="flex: 1;">
+                                <h4>{{ match.home_team }}</h4>
+                                <div>
+                                    <strong>Goals:</strong>
+                                    <ul>
+                                        {% for g in match.goals %}
+                                            {% if g.team_side == 'home' and g.event_type == 'goal' %}
+                                                <li>{{ g.player_name }} - {{ g.time }}'</li>
+                                            {% endif %}
+                                            {% if g.team_side == 'away' and g.is_own_goal %}
+                                                <li>{{ g.player_name }} (OG) - {{ g.time }}'</li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <strong>Cards:</strong>
+                                    <ul>
+                                        {% for c in match.cards if c.team_side == 'home' %}
+                                            <li>{{ c.player_name }} - {{ c.type }} - {{ c.time }}'</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Away Team Section -->
+                            <div style="flex: 1;">
+                                <h4>{{ match.away_team }}</h4>
+                                <div>
+                                    <strong>Goals:</strong>
+                                    <ul>
+                                        {% for g in match.goals %}
+                                            {% if g.team_side == 'away' and g.event_type == 'goal' %}
+                                                <li>{{ g.player_name }} - {{ g.time }}'</li>
+                                            {% endif %}
+                                            {% if g.team_side == 'home' and g.is_own_goal %}
+                                                <li>{{ g.player_name }} (OG) - {{ g.time }}'</li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <strong>Cards:</strong>
+                                    <ul>
+                                        {% for c in match.cards if c.team_side == 'away' %}
+                                            <li>{{ c.player_name }} - {{ c.type }} - {{ c.time }}'</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+  <title>Record New Match</title>
+</head>
+<body>
+  <header>
+    <h1>Football Scorecard</h1>
+  </header>
+
+  <div class="container">
+    <div class="nav-buttons">
+      <a href="{{ url_for('team_setup') }}"><button class="blue">Create New Team</button></a>
+      <a href="{{ url_for('select_teams') }}"><button class="blue">Start Live Match</button></a>
+      <a href="{{ url_for('view_alter_teams') }}"><button class="blue">View and Alter Teams</button></a>
+      <a href="{{ url_for('view_matches') }}"><button class="red">View Match History</button></a>
+      <a href="{{ url_for('player_stats') }}"><button class="red">View Player Statistics</button></a>
+
+    </div>
+  </div>
+</body>
+</html>

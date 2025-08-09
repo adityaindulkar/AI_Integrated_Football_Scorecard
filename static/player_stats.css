@@ -1,0 +1,26 @@
+body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .stats-header {
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .table-responsive {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        th {
+            background-color: #343a40;
+            color: white;
+        }
+        .no-players {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }

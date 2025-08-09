@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='teamsetup.css') }}">
+  <title>Team Setup</title>
+</head>
+<body>
+  <header>
+    <h1>Enter Team and Player Details</h1>
+  </header>
+  <div class="container">
+    <form id="teamForm" method="POST" action="{{ url_for('team_setup') }}">
+      <div class="team">
+        <h2>Team</h2>
+        <label>Team Name:</label>
+        <input type="text" id="teamName" name="teamName" required>
+        <div class="player-list" id="teamPlayers">
+          <label>Players:</label>
+          <!-- 11 players + 4 subs -->
+        </div>
+      </div>
+
+      <button type="submit">Create Team</button>
+    </form>
+  </div>
+
+  <script>
+    function generatePlayerInputs(containerId, prefix) {
+      const container = document.getElementById(containerId);
+      for (let i = 1; i <= 15; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = `${prefix}Player${i}`;
+        input.placeholder = i <= 11 ? `Player ${i} (Playing XI)` : `Substitute ${i - 11}`;
+        input.required = true;
+        container.appendChild(input);
+      }
+    }
+
+    generatePlayerInputs('teamPlayers', 'A');
+  </script>
+</body>
+</html>
