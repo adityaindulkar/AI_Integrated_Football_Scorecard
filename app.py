@@ -7,7 +7,7 @@ import json
 from collections import defaultdict
 import google.generativeai as genai
 from flask_wtf.csrf import CSRFProtect
-genai.configure(api_key='AIzaSyC5l4q9g3DeqXYEcgGzoZNY8FDmmt6vCf0')
+genai.configure(api_key='*****')
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
